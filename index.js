@@ -27,9 +27,7 @@ const getCsvHandler = () =>
 
 getCsvBtn.addEventListener('click', getCsvHandler)
 
-
 function recursionFetch(token, beginDate, endDate, lastId = '', lastTime = '') {
-
     const params = {
       fromId: lastId,
       fromSortingField: lastTime,
@@ -43,15 +41,16 @@ function recursionFetch(token, beginDate, endDate, lastId = '', lastTime = '') {
   }
   fetchData(params, token).then(resp => 
     {      
-      console.log(resp.data.products)
       createCSV(resp.data.products)
       if(resp.data.products.length >= 50){
         recursionFetch(token, beginDate, endDate, resp.data.products[49].id, resp.data.products[49].createdDate)
       }
       else {
-          encodedUri = encodeURI(csvContent);
-          window.open(encodedUri);
-          console.log(encodedUri)
+          var link = document.createElement("a");
+          link.setAttribute("href", csvContent);
+          link.setAttribute("download", "выгрузка.csv");
+          document.body.appendChild(link); 
+          link.click();
       }
     })
 }
@@ -109,9 +108,17 @@ const fetchData = async (params, token) => {
     }
   }
 
+function createCSV (products){        
+    products.forEach(
+        item => 
+        {              
+          let newName = item.name.replace('#', '№')
+          csvContent = csvContent + newName + ';' + item.unitName + ';' + item.quantityStart + ';' + item.amountStart + ';' + item.income + ';' + item.amountIncome + ';' + item.outcome + ';' + item.amountOutcome + ';' + item.quantityEnd + ';' + item.amountEnd + '\n'
+        }
+    );
+}
 
-
-//     function renderProductTable (data) 
+    //     function renderProductTable (data) 
 //     {
 //         data.forEach((item) => 
 //         {
@@ -129,16 +136,3 @@ const fetchData = async (params, token) => {
 //                                                     </tr>`)
 //         }) 
 //     }
-
-    function createCSV (products){        
-        products.forEach(
-            item => 
-            {
-               csvContent = csvContent + item.name + ';' + item.unitName + ';' + item.quantityStart + ';' + item.amountStart + ';' + item.income + ';' + item.amountIncome + ';' + item.outcome + ';' + item.amountOutcome + ';' + item.quantityEnd + ';' + item.amountEnd + '\n'
-            }
-        );
-    }
-
-    // encodedUri = encodeURI(csvContent);
-    // window.open(encodedUri);
-    // console.log(encodedUri)

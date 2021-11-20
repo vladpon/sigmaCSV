@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-
   <meta charset="utf-8">
-  <link rel="stylesheet"  href="styles.css" > 
+  <!-- <link rel="stylesheet"  href="styles.css" >  -->
   <title></title>
 </head>
 <body>
@@ -12,14 +11,191 @@
         <input class = 'period-form__end' type="date">
         <input type = "button" class = 'period-form__submit' value="гетСиЭсВИ">
     </form>
-    <table >
+    <!-- <table >
         <tbody class = 'product-table'>
         </tbody>
-    </table>
+    </table> -->
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="index.js"></script>    
+    <!-- <script src="index.js"></script>     -->
+    <script>
+        const getCsvBtn = document.querySelector('.period-form__submit')
+
+        const beginPeriodInput = document.querySelector('.period-form__begin')
+        const endPeriodInput = document.querySelector('.period-form__end')
+
+        let csvContent = "data:text/csv;charset=utf-8,"
+
+        const getCsvHandler = () => 
+        {
+            if((beginPeriodInput.value === '') || (endPeriodInput.value === ''))
+            {
+                alert('период нада')
+            }
+            else 
+            {        
+                getToken().then(res => 
+                    {
+                        beginDate = new Date(beginPeriodInput.value)
+                        endDate = new Date(endPeriodInput.value)
+                        beginDate.setHours(0, 0, 0, 0)
+                        endDate.setHours(24, 0, 0, 0)                
+                        recursionFetch(res.data.access_token, beginDate, endDate);
+                    })                
+            }
+        }
+
+        getCsvBtn.addEventListener('click', getCsvHandler)
+
+        function recursionFetch(token, beginDate, endDate, lastId = '', lastTime = '') {
+            const params = {
+            fromId: lastId,
+            fromSortingField: lastTime,
+            sortingField: '',
+            search: '',
+            parentGroupIds: '',
+            categoryFilter: '',
+            begin: beginDate,
+            end: endDate,
+            withoutTransitions: true
+        }
+        fetchData(params, token).then(resp => 
+            {      
+            createCSV(resp.data.products)
+            if(resp.data.products.length >= 50){
+                recursionFetch(token, beginDate, endDate, resp.data.products[49].id, resp.data.products[49].createdDate)
+            }
+            else {
+                var link = document.createElement("a");
+                link.setAttribute("href", csvContent);
+                link.setAttribute("download", "выгрузка.csv");
+                document.body.appendChild(link); 
+                link.click();
+                csvContent = "data:text/csv;charset=utf-8,"
+            }
+            })
+        }
+
+
+        const getToken = async () =>
+        {
+            const authData = new FormData();
+            authData.append('scope', 'read write')
+            authData.append('grant_type', 'password')
+            authData.append('username', '+79233151357')
+            authData.append('password', '123456')
+
+            try {
+                let options = {
+                url: 'https://api-s07.sigma.ru/oauth/token',
+                method: 'post',
+                headers: {
+                        'Authorization': 'Basic ' + 'cWFzbGFwcDpteVNlY3JldE9BdXRoU2VjcmV0'
+                    },
+                data: authData
+                }    
+                return await axios(options)
+            }
+            catch (error) {
+                if (error.response && error.response.data) {
+                const { data = {}, statusText } = error.response
+                const { errors = '' } = data
+                error.message = errors ? errors : statusText
+                }
+                throw error
+            }
+        }
+
+        const fetchData = async (params, token) => {
+            try {
+            let options = {
+                url: 'https://api-s07.sigma.ru/rest/v5/companies/4c6d76ec-3eb6-4c14-a784-30d0db4540f6/products/transitions',
+                method: 'get',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                params
+            }
+        
+            return await axios(options)
+            }
+            catch (error) {
+            if (error.response && error.response.data) {
+                const { data = {}, statusText } = error.response
+                const { errors = '' } = data
+                error.message = errors ? errors : statusText
+            }
+            throw error
+            }
+        }
+
+        function createCSV (products){        
+            products.forEach(
+                item => 
+                {              
+                let newName = item.name.replace('#', '№')
+                csvContent = csvContent + newName + ';' + item.unitName + ';' + item.quantityStart + ';' + item.amountStart + ';' + item.income + ';' + item.amountIncome + ';' + item.outcome + ';' + item.amountOutcome + ';' + item.quantityEnd + ';' + item.amountEnd + '\n'
+                }
+            );
+        }
+
+            //     function renderProductTable (data) 
+        //     {
+        //         data.forEach((item) => 
+        //         {
+        //             table.insertAdjacentHTML('beforeend', `<tr>
+        //                                                         <td>${item.name}</td>
+        //                                                         <td>${item.unitName}</td>
+        //                                                         <td>${item.quantityStart}</td>
+        //                                                         <td>${item.amountStart}</td>
+        //                                                         <td>${item.income}</td>
+        //                                                         <td>${item.amountIncome}</td>
+        //                                                         <td>${item.outcome}</td>
+        //                                                         <td>${item.amountOutcome}</td>
+        //                                                         <td>${item.quantityEnd}</td>
+        //                                                         <td>${item.amountEnd}</td>
+        //                                                     </tr>`)
+        //         }) 
+        //     }
+    </script>
 </body>
+<style>
+    * {
+    font-family: monospace;
+    }
+
+    .period-form {
+    margin: 0 auto;
+    width: 350px;
+    background-color: rgb(202, 255, 255);
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 4px;
+    box-shadow: 10px 10px 1px;
+    padding: 25px;
+    text-align: center;
+    }
+
+    .period-form__submit {
+    margin-top: 20px;
+    width: 200px;
+    background-color: rgb(0, 104, 104);
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid rgb(0, 54, 54);
+    box-shadow: 2px 2px 1px rgb(0, 54, 54);
+    }
+
+    .period-form__submit:hover {
+    background-color: rgb(1, 126, 126);
+    }
+
+    .period-form__submit:active {
+    box-shadow: none;
+    transform: translate(2px, 2px);
+    }
 
 </style>
 
