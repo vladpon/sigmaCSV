@@ -1,0 +1,56 @@
+.test-button {
+  padding: 10px;
+}
+
+.product-table {
+  margin: 0 auto;
+  margin-top: 50px;
+  width: 750px;
+  min-height: 200px;
+  background-color: rgb(223, 223, 223);
+}
+
+.getCSV {
+  padding: 10px;
+}
+
+.getTokenBtn {
+  padding: 10px;
+}
+
+* {
+  font-family: monospace;
+}
+
+.period-form {
+  margin: 0 auto;
+  width: 350px;
+  background-color: rgb(202, 255, 255);
+  border: 1px solid rgb(0, 0, 0);
+  border-radius: 4px;
+  box-shadow: 10px 10px 1px;
+  padding: 25px;
+  text-align: center;
+}
+
+.period-form__submit {
+  margin-top: 20px;
+  width: 200px;
+  background-color: rgb(0, 104, 104);
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid rgb(0, 54, 54);
+  box-shadow: 2px 2px 1px rgb(0, 54, 54);
+}
+
+.period-form__submit:hover {
+  background-color: rgb(1, 126, 126);
+}
+
+.period-form__submit:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
