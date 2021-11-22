@@ -6,10 +6,19 @@
   <title></title>
 </head>
 <body>
-    <form class = 'period-form'>
-        <input class = 'period-form__begin' type="date">
-        <input class = 'period-form__end' type="date">
+    <form name = 'getCsvForm' class = 'period-form'>
+        <div calss = 'perid-form__dates'>
+            <input class = 'period-form__begin' type="date">
+            <input class = 'period-form__end' type="date">
+        </div>
+        <select name = 'storehouse'>
+            <option value="" selected>Все склады</option>
+            <option value="01da4b2e-5fc8-4769-81ce-0dbb979b33c0">Платинум Арена</option>
+            <option value="189ae225-2de6-405c-aa0a-f29bda743d79">Буфет 1 этаж</option>
+            <option value="98f29a2d-6c2f-42d8-a3c3-3e26c5504e6e">Буфет 2 этаж</option>
+        </select>
         <input type = "button" class = 'period-form__submit' value="гетСиЭсВИ">
+
     </form>
     <!-- <table >
         <tbody class = 'product-table'>
@@ -23,8 +32,9 @@
 
         const beginPeriodInput = document.querySelector('.period-form__begin')
         const endPeriodInput = document.querySelector('.period-form__end')
+        const storehouseSelect = document.forms.getCsvForm.querySelector('select')
 
-        let csvContent = "data:text/csv;charset=utf-8,"
+        let csvContent = ""
 
         const getCsvHandler = () => 
         {
@@ -33,37 +43,43 @@
                 alert('период нада')
             }
             else 
-            {        
+            {
+                csvContent = "data:text/csv;charset=utf-8,"
                 getToken().then(res => 
                     {
+                        const storeHouse = storehouseSelect.value
                         beginDate = new Date(beginPeriodInput.value)
                         endDate = new Date(endPeriodInput.value)
                         beginDate.setHours(0, 0, 0, 0)
                         endDate.setHours(24, 0, 0, 0)                
-                        recursionFetch(res.data.access_token, beginDate, endDate);
-                    })                
+                        recursionFetch(res.data.access_token, beginDate, endDate, storeHouse);
+                    })
+                
             }
         }
 
         getCsvBtn.addEventListener('click', getCsvHandler)
 
-        function recursionFetch(token, beginDate, endDate, lastId = '', lastTime = '') {
+        function recursionFetch(token, beginDate, endDate, storeHouse, lastId = '', lastTime = '') {
+            console.log('beginDate: ', beginDate, '  endDate: ', endDate)
+            console.log('storeHouse: ', storeHouse)
             const params = {
-            fromId: lastId,
-            fromSortingField: lastTime,
-            sortingField: '',
-            search: '',
-            parentGroupIds: '',
-            categoryFilter: '',
-            begin: beginDate,
-            end: endDate,
-            withoutTransitions: true
+                fromId: lastId,
+                fromSortingField: lastTime,
+                sortingField: '',
+                search: '',
+                parentGroupIds: '',
+                categoryFilter: '',
+                begin: beginDate,
+                end: endDate,
+                withoutTransitions: true,
+                storehouseIds: storeHouse
         }
         fetchData(params, token).then(resp => 
             {      
             createCSV(resp.data.products)
             if(resp.data.products.length >= 50){
-                recursionFetch(token, beginDate, endDate, resp.data.products[49].id, resp.data.products[49].createdDate)
+                recursionFetch(token, beginDate, endDate, storeHouse, resp.data.products[49].id, resp.data.products[49].createdDate)
             }
             else {
                 var link = document.createElement("a");
@@ -71,7 +87,6 @@
                 link.setAttribute("download", "выгрузка.csv");
                 document.body.appendChild(link); 
                 link.click();
-                csvContent = "data:text/csv;charset=utf-8,"
             }
             })
         }
@@ -165,36 +180,50 @@
     }
 
     .period-form {
-    margin: 0 auto;
-    width: 350px;
-    background-color: rgb(202, 255, 255);
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 4px;
-    box-shadow: 10px 10px 1px;
-    padding: 25px;
-    text-align: center;
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        width: 350px;
+        background-color: rgb(202, 255, 255);
+        border: 1px solid rgb(0, 0, 0);
+        border-radius: 4px;
+        box-shadow: 10px 10px 1px;
+        padding: 25px;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .perid-form__dates {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .period-form select {
+        margin:  0px auto;
+        margin-top: 15px;
     }
 
     .period-form__submit {
-    margin-top: 20px;
-    width: 200px;
-    background-color: rgb(0, 104, 104);
-    color: white;
-    font-weight: 600;
-    font-size: 18px;
-    padding: 6px;
-    border-radius: 4px;
-    border: 1px solid rgb(0, 54, 54);
-    box-shadow: 2px 2px 1px rgb(0, 54, 54);
+        margin-top: 20px;
+        width: 200px;
+        background-color: rgb(0, 104, 104);
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid rgb(0, 54, 54);
+        box-shadow: 2px 2px 1px rgb(0, 54, 54);
     }
 
     .period-form__submit:hover {
-    background-color: rgb(1, 126, 126);
+        background-color: rgb(1, 126, 126);
     }
 
     .period-form__submit:active {
-    box-shadow: none;
-    transform: translate(2px, 2px);
+        box-shadow: none;
+        transform: translate(2px, 2px);
     }
 
 </style>
